@@ -277,14 +277,13 @@ class ReactGuage extends React.Component {
                 var first = lg.selectAll('text').filter(function(d, i) {
                     return i === 0;
                 });
-                console.log(ticks);
-                last.data([ticks[1]])
+                last.data([config.maxValue])
                     .enter()
                     .append('text')
                     .attr('transform', function(d) {
                         var ratio = scale(d);
                         var newAngle = config.minAngle + ratio * range;
-                        return 'translate(150,0)';
+                        return 'translate(80,0)';
                         return (
                             'rotate(' +
                             newAngle +
@@ -304,14 +303,14 @@ class ReactGuage extends React.Component {
                     .style('fill', config.textColor);
 
                 first
-                    .data([ticks[0]])
+                    .data([config.minValue])
                     .enter()
                     .append('text')
                     .attr('transform', function(d) {
                         var ratio = scale(d);
                         var newAngle = config.minAngle + ratio * range;
                         // return 'rotate(630) translate(0,150)';
-                        return 'translate(-140,0)';
+                        return 'translate(-70,0)';
                         return (
                             'rotate(' +
                             newAngle +
