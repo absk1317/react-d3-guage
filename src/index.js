@@ -1,11 +1,11 @@
 // React port of - http://bl.ocks.org/msqr/3202712
-import React from "react";
+import React from 'react';
 import PropTypes from 'prop-types';
 
 // selectively import d3 components for reducing file size
 // import * as d3 from "d3";
-import { 
-    format as d3Format , 
+import {
+    format as d3Format,
     scaleLinear as d3ScaleLinear,
     range as d3Range,
     arc as d3Arc,
@@ -45,14 +45,12 @@ import {
     easeElasticOut as d3EaseElasticOut,
     easeElasticInOut as d3EaseElasticInOut,
     easeElastic as d3EaseElastic
-} from "d3";
+} from 'd3';
 
 class ReactSpeedometer extends React.Component {
-
     static displayName = 'ReactSpeedometer';
 
     constructor(props) {
-        
         super(props);
 
         // list of d3 refs to share within the components
@@ -63,22 +61,17 @@ class ReactSpeedometer extends React.Component {
         // the initial value is 0;
         // on subsequent renders we will update the initial value with previous value for animating
         this.initialValue = 0;
-    };
+    }
 
-    componentWillMount() {
-
-    };
+    componentWillMount() {}
 
     componentDidMount() {
         // render the gauge here
         this.renderGauge();
-    };
-    
+    }
+
     render = () => {
-        return (
-            <div ref={ref => this.gaugeDiv = ref}>
-            </div>
-        );
+        return <div ref={ref => (this.gaugeDiv = ref)} />;
     };
 
     componentWillReceiveProps() {
@@ -86,7 +79,7 @@ class ReactSpeedometer extends React.Component {
         this.initialValue = this.props.value || 0;
     }
 
-    shouldComponentUpdate (new_props) {
+    shouldComponentUpdate(new_props) {
         return true;
         // NOTE: following logic for 'stopRerender'
         // update the props
@@ -97,9 +90,7 @@ class ReactSpeedometer extends React.Component {
         return false;
     }
 
-    componentWillUpdate() {
-
-    }
+    componentWillUpdate() {}
 
     componentDidUpdate() {
         // on update, check if 'forceRender' option is present;
@@ -107,12 +98,11 @@ class ReactSpeedometer extends React.Component {
             this.renderGauge();
         } else {
             // let us just animate the value of the speedometer
-            this.updateReadings();    
+            this.updateReadings();
         }
     }
 
-    getGauge () {
-
+    getGauge() {
         var self = this; // save reference
 
         var PROPS = this.props;
@@ -121,8 +111,7 @@ class ReactSpeedometer extends React.Component {
         // takes a container inside which we will display the speedometer
         // here container is our gaugeDiv ref
         // return function (container) {
-        return (container) => {
-
+        return container => {
             // default config that are 'not' configurable
             var default_config = {
                 ringInset: 20,
@@ -146,8 +135,12 @@ class ReactSpeedometer extends React.Component {
                 // width/height config
                 // if fluidWidth; width/height taken from the parent of the ReactSpeedometer
                 // else if width/height given it is used; else our default
-                width: PROPS.fluidWidth ? default_config.parentWidth : ( PROPS.width ),
-                height: PROPS.fluidWidth ? default_config.parentHeight : ( PROPS.height ),
+                width: PROPS.fluidWidth
+                    ? default_config.parentWidth
+                    : PROPS.width,
+                height: PROPS.fluidWidth
+                    ? default_config.parentHeight
+                    : PROPS.height,
                 // ring width should be 1/4 th of width
                 ringWidth: PROPS.ringWidth,
                 // min/max values
@@ -158,34 +151,32 @@ class ReactSpeedometer extends React.Component {
                 // segments in the speedometer
                 majorTicks: PROPS.segments,
                 // color range for the segments
-                arcColorFn: d3InterpolateHsl( 
-                                d3Rgb( PROPS.startColor ), 
-                                d3Rgb( PROPS.endColor ) 
-                            ),
+                arcColorFn: d3InterpolateHsl(
+                    d3Rgb(PROPS.startColor),
+                    d3Rgb(PROPS.endColor)
+                ),
                 // needle configuration
                 needleTransition: PROPS.needleTransition,
                 needleTransitionDuration: PROPS.needleTransitionDuration,
                 // text color
                 textColor: PROPS.textColor,
                 // label format
-                labelFormat: d3Format( PROPS.valueFormat ),
+                labelFormat: d3Format(PROPS.valueFormat),
                 // value text string (template string)
                 currentValueText: PROPS.currentValueText
             };
             // END: Configurable values
 
             // merge default config with the config
-            config = Object.assign( {}, default_config, config );
+            config = Object.assign({}, default_config, config);
 
             var range = undefined,
                 r = undefined,
                 pointerHeadLength = undefined,
                 value = 0,
-
                 svg = undefined,
                 arc = undefined,
                 scale = undefined,
-
                 ticks = undefined,
                 tickData = undefined;
 
@@ -193,52 +184,51 @@ class ReactSpeedometer extends React.Component {
             var donut = d3Pie();
 
             function deg2rad(deg) {
-                return deg * Math.PI / 180;
+                return (deg * Math.PI) / 180;
             }
 
             function newAngle(d) {
                 var ratio = scale(d);
-                var newAngle = config.minAngle + (ratio * range);
+                var newAngle = config.minAngle + ratio * range;
 
                 return newAngle;
             }
 
-            function configure () {
-
+            function configure() {
                 // merge the config with incoming (optional) configuration
                 // config = Object.assign( {}, config, configuration );
 
                 range = config.maxAngle - config.minAngle;
                 // r = config.size / 2;
                 r = config.width / 2;
-                pointerHeadLength = Math.round(r * config.pointerHeadLengthPercent);
+                pointerHeadLength = Math.round(
+                    r * config.pointerHeadLengthPercent
+                );
 
                 // a linear scale that maps domain values to a percent from 0..1
                 // scale = d3.scaleLinear()
                 scale = d3ScaleLinear()
-                            .range([0, 1])
-                            .domain([config.minValue, config.maxValue]);
+                    .range([0, 1])
+                    .domain([config.minValue, config.maxValue]);
 
                 ticks = scale.ticks(config.majorTicks);
                 // tickData = d3.range(config.majorTicks)
-                tickData = d3Range(config.majorTicks)
-                                .map(function() {
-                                    return 1 / config.majorTicks;
-                                });
-
+                tickData = d3Range(config.majorTicks).map(function() {
+                    return 1 / config.majorTicks;
+                });
                 // arc = d3.svg.arc()
                 // arc = d3.arc()
                 arc = d3Arc()
-                        .innerRadius(r - config.ringWidth - config.ringInset)
-                        .outerRadius(r - config.ringInset)
-                        .startAngle(function(d, i) {
-                            var ratio = d * i;
-                            return deg2rad(config.minAngle + (ratio * range));
-                        })
-                        .endAngle(function(d, i) {
-                            var ratio = d * (i + 1);
-                            return deg2rad(config.minAngle + (ratio * range));
-                        });
+                    .innerRadius(r - config.ringWidth - config.ringInset)
+                    .outerRadius(r - config.ringInset)
+                    .startAngle(function(d, i) {
+                        var ratio = d * i;
+                        return deg2rad(config.minAngle + ratio * range);
+                    })
+                    .endAngle(function(d, i) {
+                        var ratio = d * (i + 1);
+                        return deg2rad(config.minAngle + ratio * range);
+                    });
             }
 
             function centerTranslation() {
@@ -246,74 +236,121 @@ class ReactSpeedometer extends React.Component {
             }
 
             function isRendered() {
-                return (svg !== undefined);
+                return svg !== undefined;
             }
 
-            function render (newValue) {
-
+            function render(newValue) {
                 // svg = d3.select(container)
-                svg = d3Select( container )
-                        .append('svg:svg')
-                        // .attr('class', 'gauge')
-                        // adding class 'speedometer' for the main svg holder
-                        .attr('class', 'speedometer')
-                        .attr('width', config.width)
-                        .attr('height', config.height);
+                svg = d3Select(container)
+                    .append('svg:svg')
+                    // .attr('class', 'gauge')
+                    // adding class 'speedometer' for the main svg holder
+                    .attr('class', 'speedometer')
+                    .attr('width', config.width)
+                    .attr('height', config.height);
 
                 var centerTx = centerTranslation();
 
-                var arcs = svg.append('g')
-                                .attr('class', 'arc')
-                                .attr('transform', centerTx);
+                var arcs = svg
+                    .append('g')
+                    .attr('class', 'arc')
+                    .attr('transform', centerTx);
 
                 arcs.selectAll('path')
-                        .data(tickData)
-                            .enter()
-                        .append('path')
-                        .attr('class', 'speedo-segment')
-                        .attr('fill', function(d, i) {
-                            return config.arcColorFn(d * i);
-                        })
-                        .attr('d', arc);
+                    .data(tickData)
+                    .enter()
+                    .append('path')
+                    .attr('class', 'speedo-segment')
+                    .attr('fill', function(d, i) {
+                        return config.arcColorFn(d * i);
+                    })
+                    .attr('d', arc);
 
-                var lg = svg.append('g')
-                            .attr('class', 'label')
-                            .attr('transform', centerTx);
-
-                lg.selectAll('text')
-                    .data(ticks)
-                        .enter().append('text')
+                var lg = svg
+                    .append('g')
+                    .attr('class', 'label')
+                    .attr('transform', centerTx);
+                var lastIndex = lg.selectAll('text').size() - 1;
+                var last = lg.selectAll('text').filter(function(d, i) {
+                    return i === lastIndex;
+                });
+                var first = lg.selectAll('text').filter(function(d, i) {
+                    return i === 0;
+                });
+                last.data([ticks[1]])
+                    .enter()
+                    .append('text')
                     .attr('transform', function(d) {
                         var ratio = scale(d);
-                        var newAngle = config.minAngle + (ratio * range);
-                        return 'rotate(' + newAngle + ') translate(0,' + (config.labelInset - r) + ')';
+                        var newAngle = config.minAngle + ratio * range;
+                        return 'rotate(630) translate(0,150)';
+                        return (
+                            'rotate(' +
+                            newAngle +
+                            ') translate(0,' +
+                            (config.labelInset - r) +
+                            ')'
+                        );
                     })
                     .text(config.labelFormat)
                     // add class for text label
                     .attr('class', 'segment-value')
                     // styling stuffs
-                    .style("text-anchor", "middle")
-                    .style("font-size", "14px")
-                    .style("font-weight", "bold")
+                    .style('text-anchor', 'middle')
+                    .style('font-size', '14px')
+                    .style('font-weight', 'bold')
                     // .style("fill", "#666");
-                    .style("fill", config.textColor);
+                    .style('fill', config.textColor);
+
+                first
+                    .data([ticks[0]])
+                    .enter()
+                    .append('text')
+                    .attr('transform', function(d) {
+                        var ratio = scale(d);
+                        var newAngle = config.minAngle + ratio * range;
+                        // return 'rotate(630) translate(0,150)';
+                        return (
+                            'rotate(' +
+                            newAngle +
+                            ') translate(0,' +
+                            (config.labelInset - r) +
+                            ')'
+                        );
+                    })
+                    .text(config.labelFormat)
+                    // add class for text label
+                    .attr('class', 'segment-value')
+                    // styling stuffs
+                    .style('text-anchor', 'middle')
+                    .style('font-size', '14px')
+                    .style('font-weight', 'bold')
+                    // .style("fill", "#666");
+                    .style('fill', config.textColor);
 
                 // save current value reference
-                self._d3_refs.current_value_text = svg.append("g")
-                    .attr("transform", "translate(" + config.width/2 + "," + (config.width/2) + ")")
-                        .append("text")
+                self._d3_refs.current_value_text = svg
+                    .append('g')
+                    .attr(
+                        'transform',
+                        'translate(' +
+                            config.width / 2 +
+                            ',' +
+                            config.width / 2 +
+                            ')'
+                    )
+                    .append('text')
                     // add class for the text
-                    .attr("class", 'current-value')
-                    .attr("text-anchor", "middle")
+                    .attr('class', 'current-value')
+                    .attr('text-anchor', 'middle')
                     // position the text 23pt below
-                    .attr("y", 23)
-                        // add text
-                        .text( config.currentValue || "" )
-                    .style("font-size", "16px")
-                    .style("font-weight", "bold")
+                    .attr('y', 23)
+                    // add text
+                    .text(config.currentValue || '')
+                    .style('font-size', '16px')
+                    .style('font-weight', 'bold')
                     // .style("fill", "#666");
-                    .style("fill", config.textColor);
-
+                    .style('fill', config.textColor);
 
                 var lineData = [
                     [config.pointerWidth / 2, 0],
@@ -326,18 +363,21 @@ class ReactSpeedometer extends React.Component {
                 // var pointerLine = d3.svg.line().interpolate('monotone');
                 // var pointerLine = d3.line()
                 var pointerLine = d3Line()
-                                    // .curve( d3.curveMonotoneX );
-                                    .curve( d3CurveMonotoneX );
-                
-                var pg = svg.append('g').data([lineData])
-                            .attr('class', 'pointer')
-                            .attr('transform', centerTx)
-                            .style("fill", config.needleColor)
-                            // .style("stroke", "green");
+                    // .curve( d3.curveMonotoneX );
+                    .curve(d3CurveMonotoneX);
 
-                self._d3_refs.pointer = pg.append('path')
-                                            .attr('d', pointerLine )
-                                            .attr('transform', 'rotate(' + config.minAngle + ')');
+                var pg = svg
+                    .append('g')
+                    .data([lineData])
+                    .attr('class', 'pointer')
+                    .attr('transform', centerTx)
+                    .style('fill', config.needleColor);
+                // .style("stroke", "green");
+
+                self._d3_refs.pointer = pg
+                    .append('path')
+                    .attr('d', pointerLine)
+                    .attr('transform', 'rotate(' + config.minAngle + ')');
 
                 update(newValue === undefined ? 0 : newValue);
             }
@@ -351,38 +391,40 @@ class ReactSpeedometer extends React.Component {
 
                 // NOTE: not using template string to support IE 9/10/11
                 // ref: https://caniuse.com/#feat=template-literals
-                
+
                 // if needed, maybe we can later add some polyfill support
                 // ref: https://stackoverflow.com/a/29771751/1410291
                 function assemble(literal, params) {
                     // ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function
-                    return new Function(params, "return `"+literal+"`;");
+                    return new Function(params, 'return `' + literal + '`;');
                 }
-                var template = assemble(config.currentValueText, "value");
+                var template = assemble(config.currentValueText, 'value');
                 return template(value);
             }
 
-            function update (newValue) {
+            function update(newValue) {
                 var ratio = scale(newValue);
 
-                var newAngle = config.minAngle + (ratio * range);
+                var newAngle = config.minAngle + ratio * range;
                 // update the pointer
-                self._d3_refs.pointer.transition()
-                    .duration( config.needleTransitionDuration )
+                self._d3_refs.pointer
+                    .transition()
+                    .duration(config.needleTransitionDuration)
                     // .ease( d3EaseLinear )
-                    .ease( self.getTransitionMethod( config.needleTransition ) )
+                    .ease(self.getTransitionMethod(config.needleTransition))
                     // .ease( d3EaseElastic )
                     .attr('transform', 'rotate(' + newAngle + ')');
                 // update the current value
                 // self._d3_refs.current_value_text.text( config.labelFormat( newValue ) );
-                self._d3_refs.current_value_text.text( formatCurrentValueText(newValue) );
+                self._d3_refs.current_value_text.text(
+                    formatCurrentValueText(newValue)
+                );
             }
-
 
             // configure for first time !?
             configure();
 
-            // return a object with all our functions; 
+            // return a object with all our functions;
             // also expose the 'config' object; for now, we will update the 'labelFormat' while updating
             return {
                 configure: configure,
@@ -393,165 +435,164 @@ class ReactSpeedometer extends React.Component {
                 config: config
             };
         };
-    };
+    }
 
-    renderGauge () {
-        console.log("rendering gauge ");
+    renderGauge() {
+        console.log('rendering gauge ');
         // before rendering remove the existing gauge?
         // d3.select( this.gaugeDiv )
-        d3Select( this.gaugeDiv )
-            .select("svg")
+        d3Select(this.gaugeDiv)
+            .select('svg')
             .remove();
         // store the gauge in our d3_refs
-        this._d3_refs.powerGauge = this.getGauge()( this.gaugeDiv );
+        this._d3_refs.powerGauge = this.getGauge()(this.gaugeDiv);
         // render for first time; no value means initializes with 0
-        this._d3_refs.powerGauge.render( this.initialValue );
+        this._d3_refs.powerGauge.render(this.initialValue);
         // update readings for the first time
         this.updateReadings();
-    };
+    }
 
-    updateReadings () {
+    updateReadings() {
         // refresh the config of 'labelFormat'
-        this._d3_refs.powerGauge.config.labelFormat = d3Format( this.props.valueFormat || "" );
+        this._d3_refs.powerGauge.config.labelFormat = d3Format(
+            this.props.valueFormat || ''
+        );
         // refresh the current value text
-        this._d3_refs.powerGauge.config.currentValueText = this.props.currentValueText || "${value}";
+        this._d3_refs.powerGauge.config.currentValueText =
+            this.props.currentValueText || '${value}';
         // updates the readings of the gauge with the current prop value
         // animates between old prop value and current prop value
-        this._d3_refs.powerGauge.update( this.props.value || 0 );
-    };
+        this._d3_refs.powerGauge.update(this.props.value || 0);
+    }
 
     // takes a 'transition string' and returns a d3 transition method
     // default is easeLinear
-    getTransitionMethod (transition) {
-
+    getTransitionMethod(transition) {
         switch (transition) {
             // ease linear
-            case "easeLinear":
-                return d3EaseLinear; 
+            case 'easeLinear':
+                return d3EaseLinear;
                 break;
             // easeQuadIn as d3EaseQuadIn,
-            case "easeQuadIn":
+            case 'easeQuadIn':
                 return d3EaseQuadIn;
                 break;
             // easeQuadOut as d3EaseQuadOut
-            case "easeQuadOut":
+            case 'easeQuadOut':
                 return d3EaseQuadOut;
                 break;
             // easeQuadInOut as d3EaseQuadInOut
-            case "easeQuadInOut":
+            case 'easeQuadInOut':
                 return d3EaseQuadInOut;
                 break;
             // easeCubicIn as d3EaseCubicIn
-            case "easeCubicIn":
+            case 'easeCubicIn':
                 return d3EaseCubicIn;
                 break;
             // easeCubicOut as d3EaseCubicOut,
-            case "easeCubicOut":
+            case 'easeCubicOut':
                 return d3EaseCubicOut;
                 break;
             // easeCubicInOut as d3EaseCubicInOut,
-            case "easeCubicInOut":
+            case 'easeCubicInOut':
                 return d3EaseCubicInOut;
                 break;
             // easePolyIn as d3EasePolyIn,
-            case "easePolyIn":
+            case 'easePolyIn':
                 return d3EasePolyIn;
                 break;
             // easePolyOut as d3EasePolyOut,
-            case "easePolyOut":
+            case 'easePolyOut':
                 return d3EasePolyOut;
                 break;
             // easePolyInOut as d3EasePolyInOut,
-            case "easePolyInOut":
+            case 'easePolyInOut':
                 return d3EasePolyInOut;
                 break;
             // easeSinIn as d3EaseSinIn,
-            case "easeSinIn":
+            case 'easeSinIn':
                 return d3EaseSinIn;
                 break;
             // easeSinOut as d3EaseSinOut,
-            case "easeSinOut":
+            case 'easeSinOut':
                 return d3EaseSinOut;
                 break;
             // easeSinInOut as d3EaseSinInOut,
-            case "easeSinInOut":
+            case 'easeSinInOut':
                 return d3EaseSinInOut;
                 break;
             // easeExpIn as d3EaseExpIn,
-            case "easeExpIn":
+            case 'easeExpIn':
                 return d3EaseExpIn;
                 break;
             // easeExpOut as d3EaseExpOut,
-            case "easeExpOut":
+            case 'easeExpOut':
                 return d3EaseExpOut;
                 break;
             // easeExpInOut as d3EaseExpInOut,
-            case "easeExpInOut":
+            case 'easeExpInOut':
                 return d3EaseExpInOut;
                 break;
             // easeCircleIn as d3EaseCircleIn,
-            case "easeCircleIn":
+            case 'easeCircleIn':
                 return d3EaseCircleIn;
                 break;
             // easeCircleOut as d3EaseCircleOut,
-            case "easeCircleOut":
+            case 'easeCircleOut':
                 return d3EaseCircleOut;
                 break;
             // easeCircleInOut as d3EaseCircleInOut,
-            case "easeCircleInOut":
+            case 'easeCircleInOut':
                 return d3EaseCircleInOut;
                 break;
             // easeBounceIn as d3EaseBounceIn,
-            case "easeBounceIn":
+            case 'easeBounceIn':
                 return d3EaseBounceIn;
                 break;
             // easeBounceOut as d3EaseBounceOut,
-            case "easeBounceOut":
+            case 'easeBounceOut':
                 return d3EaseBounceOut;
                 break;
             // easeBounceInOut as d3EaseBounceInOut,
-            case "easeBounceInOut":
+            case 'easeBounceInOut':
                 return d3EaseBounceInOut;
                 break;
             // easeBackIn as d3EaseBackIn,
-            case "easeBackIn":
+            case 'easeBackIn':
                 return d3EaseBackIn;
                 break;
             // easeBackOut as d3EaseBackOut,
-            case "easeBackOut":
+            case 'easeBackOut':
                 return d3EaseBackOut;
                 break;
             // easeBackInOut as d3EaseBackInOut,
-            case "easeBackInOut":
+            case 'easeBackInOut':
                 return d3EaseBackInOut;
                 break;
             // easeElasticIn as d3EaseElasticIn,
-            case "easeElasticIn":
+            case 'easeElasticIn':
                 return d3EaseElasticIn;
                 break;
             // easeElasticOut as d3EaseElasticOut,
-            case "easeElasticOut":
+            case 'easeElasticOut':
                 return d3EaseElasticOut;
                 break;
             // easeElasticInOut as d3EaseElasticInOut,
-            case "easeElasticInOut":
+            case 'easeElasticInOut':
                 return d3EaseElasticInOut;
                 break;
             // easeElastic as d3EaseElastic,
-            case "easeElastic":
+            case 'easeElastic':
                 return d3EaseElastic;
                 break;
 
             // ease elastic transition
-            case "easeElastic":
-                return d3EaseElastic; 
+            case 'easeElastic':
+                return d3EaseElastic;
                 break;
-        };
-
-    };
-
-};
-
+        }
+    }
+}
 
 // define the proptypes
 // make all the props and 'required' and provide sensible default in the 'defaultProps'
@@ -591,7 +632,7 @@ ReactSpeedometer.propTypes = {
 
 // define the default proptypes
 ReactSpeedometer.defaultProps = {
-    value: 0,
+    value: 100,
     minValue: 0,
     maxValue: 1000,
 
@@ -602,29 +643,29 @@ ReactSpeedometer.defaultProps = {
     fluidWidth: false,
 
     // segments to show in the speedometer
-    segments: 5,
+    segments: 1,
 
     // color strings
-    needleColor: "steelblue",
-    startColor: "#FF471A",
-    endColor: "#33CC33",
+    needleColor: 'steelblue',
+    startColor: '#FF471A',
+    endColor: '#33CC33',
 
     // needle transition type and duration
-    needleTransition: "easeQuadInOut",
+    needleTransition: 'easeQuadInOut',
     needleTransitionDuration: 500,
 
     ringWidth: 60,
 
     // text color (for both showing current value and segment values)
-    textColor: "#666",
+    textColor: '#666',
 
     // label format => https://github.com/d3/d3-format
     // by default ""; takes valid input for d3 format
-    valueFormat: "",
+    valueFormat: '',
 
     // value text string format; by default it just shows the value
     // takes es6 template string as input with a default ${value}
-    currentValueText: "${value}"
+    currentValueText: '${value}'
 };
 
 export default ReactSpeedometer;
