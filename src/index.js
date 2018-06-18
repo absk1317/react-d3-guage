@@ -47,8 +47,8 @@ import {
     easeElastic as d3EaseElastic
 } from 'd3';
 
-class ReactSpeedometer extends React.Component {
-    static displayName = 'ReactSpeedometer';
+class ReactGuage extends React.Component {
+    static displayName = 'ReactGuage';
 
     constructor(props) {
         super(props);
@@ -125,7 +125,7 @@ class ReactSpeedometer extends React.Component {
 
                 labelInset: 10,
 
-                // calculate the ReactSpeedometer 'parentNode' width/height; it might be used if fluidWidth: true
+                // calculate the ReactGuage 'parentNode' width/height; it might be used if fluidWidth: true
                 parentWidth: self.gaugeDiv.parentNode.clientWidth,
                 parentHeight: self.gaugeDiv.parentNode.clientHeight
             };
@@ -133,7 +133,7 @@ class ReactSpeedometer extends React.Component {
             // START: Configurable values
             var config = {
                 // width/height config
-                // if fluidWidth; width/height taken from the parent of the ReactSpeedometer
+                // if fluidWidth; width/height taken from the parent of the ReactGuage
                 // else if width/height given it is used; else our default
                 width: PROPS.fluidWidth
                     ? default_config.parentWidth
@@ -277,13 +277,14 @@ class ReactSpeedometer extends React.Component {
                 var first = lg.selectAll('text').filter(function(d, i) {
                     return i === 0;
                 });
+                console.log(ticks);
                 last.data([ticks[1]])
                     .enter()
                     .append('text')
                     .attr('transform', function(d) {
                         var ratio = scale(d);
                         var newAngle = config.minAngle + ratio * range;
-                        return 'rotate(630) translate(0,150)';
+                        return 'translate(150,0)';
                         return (
                             'rotate(' +
                             newAngle +
@@ -310,6 +311,7 @@ class ReactSpeedometer extends React.Component {
                         var ratio = scale(d);
                         var newAngle = config.minAngle + ratio * range;
                         // return 'rotate(630) translate(0,150)';
+                        return 'translate(-140,0)';
                         return (
                             'rotate(' +
                             newAngle +
@@ -596,7 +598,7 @@ class ReactSpeedometer extends React.Component {
 
 // define the proptypes
 // make all the props and 'required' and provide sensible default in the 'defaultProps'
-ReactSpeedometer.propTypes = {
+ReactGuage.propTypes = {
     value: PropTypes.number.isRequired,
     minValue: PropTypes.number.isRequired,
     maxValue: PropTypes.number.isRequired,
@@ -631,7 +633,7 @@ ReactSpeedometer.propTypes = {
 };
 
 // define the default proptypes
-ReactSpeedometer.defaultProps = {
+ReactGuage.defaultProps = {
     value: 100,
     minValue: 0,
     maxValue: 1000,
@@ -668,4 +670,4 @@ ReactSpeedometer.defaultProps = {
     currentValueText: '${value}'
 };
 
-export default ReactSpeedometer;
+export default ReactGuage;
